@@ -50,6 +50,7 @@ void BaseApplication::run() {
 	while (currTime = glfwGetTime(),
 		update((float)(currTime - prevTime))) {
 
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  //added by me
 		glfwPollEvents();
 		draw();
 		glfwSwapBuffers(m_window);
