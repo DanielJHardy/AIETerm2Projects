@@ -62,6 +62,13 @@ void Server::handleNetworkMessages()
 				createNewObject(bsIn, packet->systemAddress);
 				break;
 			}
+			case ID_CLIENT_UPDATE_OBJECT_POSITION:
+			{
+				RakNet::BitStream bsIn(packet->data, packet->length, false);
+				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+				updateObjectPosition(bsIn, packet->systemAddress);
+			}
 			default:
 				std::cout << "Received a message with a unknown id: " << packet->data[0];
 				break;
@@ -131,7 +138,25 @@ void Server::createNewObject(RakNet::BitStream& bsIn, RakNet::SystemAddress& own
 	newGameObject.uiOwnerClientID = systemAddressToClientID(ownerSysAddress);
 	newGameObject.uiObjectID = m_uiObjectCounter++;
 
-	sendGameObjectToAllClients(newGameObject, ownerSysAddress);
+	m_gameObjects.push_back(newGameObject);
+
+	sendGameObjectToAllClients(newGameObject, (RakNet::SystemAddress)RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+}
+
+void Server::updateObjectPosition(RakNet::BitStream& bsIn, RakNet::SystemAddress& ownerSysAddress)
+{
+	unsigned int tempObjID;
+	bsIn.Read(tempObjID);
+
+	//If sender doesnt owns the obj, return
+	if (m_gameObjects[tempObjID-1].uiOwnerClientID != systemAddressToClientID(ownerSysAddress)) return;
+
+	//update position
+	bsIn.Read(m_gameObjects[tempObjID-1].fXPos);
+	bsIn.Read(m_gameObjects[tempObjID-1].fZPos);
+
+	sendGameObjectToAllClients(m_gameObjects[tempObjID-1], ownerSysAddress);
+
 }
 
 void Server::sendGameObjectToAllClients(GameObject& gameObject, RakNet::SystemAddress& ownerSystemAddress)
@@ -147,5 +172,5 @@ void Server::sendGameObjectToAllClients(GameObject& gameObject, RakNet::SystemAd
 	bsOut.Write(gameObject.uiOwnerClientID);
 	bsOut.Write(gameObject.uiObjectID);
 
-	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, ownerSystemAddress, true);
 }

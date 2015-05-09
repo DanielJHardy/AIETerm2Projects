@@ -41,6 +41,10 @@ public:
 	void readObjectDataFromServer(RakNet::BitStream& bsIn);
 
 	void createGameObject();
+
+	void moveClientObject(float deltaTime);
+	void sendUpdatedObjectPositionToServer(GameObject& obj);
+
 public:
 	RakNet::RakPeerInterface* m_pPeerInterface;
 

@@ -38,6 +38,8 @@ protected:
 
 	void sendGameObjectToAllClients(GameObject& gameObject, RakNet::SystemAddress& ownerSystemAddress);
 
+	void updateObjectPosition(RakNet::BitStream& bsIn, RakNet::SystemAddress& ownerSysAddress);
+
 private:
 	struct ConnectionInfo
 	{

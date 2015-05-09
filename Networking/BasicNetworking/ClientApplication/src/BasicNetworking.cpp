@@ -8,6 +8,8 @@
 #include "../../ServerApplication/GameMessages.h"
 #include "Gizmos.h"
 
+#include <GLFW\glfw3.h>
+
 
 BasicNetworkingApplication::BasicNetworkingApplication()
 {
@@ -25,6 +27,8 @@ BasicNetworkingApplication::~BasicNetworkingApplication()
 
 bool BasicNetworkingApplication::startup()
 {
+
+
 	//Setup the basic window
 	createWindow("Client Application", 1280, 720);
 
@@ -52,6 +56,8 @@ bool BasicNetworkingApplication::update(float deltaTime)
 
 	//check for network messages
 	handleNetworkMessages();
+
+	moveClientObject(deltaTime);
 
 	return true;
 }
@@ -225,4 +231,48 @@ void BasicNetworkingApplication::createGameObject()
 	bsOut.Write(tempGameObject.fBlueColour);
 
 	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+}
+
+void BasicNetworkingApplication::moveClientObject(float deltaTime)
+{
+	//we dont have a valid client ID, so we dont have a game object!
+	if (m_uiClientID == 0) return;
+
+	//No game object sent to us, so we dont know who we are yet
+	if (m_gameObjects.size() == 0) return;
+
+	bool bUpdatedObjectPosition = false;
+
+	GameObject& myClientObject = m_gameObjects[m_uiclientObjectIndex];
+
+	if (glfwGetKey(m_window, GLFW_KEY_UP))
+	{
+		myClientObject.fZPos += 2 * deltaTime;
+		bUpdatedObjectPosition = true;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_DOWN))
+	{
+		myClientObject.fZPos -= 2 * deltaTime;
+		bUpdatedObjectPosition = true;
+	}
+
+	if (bUpdatedObjectPosition)
+	{
+		sendUpdatedObjectPositionToServer(myClientObject);
+	}
+
+
+}
+
+void BasicNetworkingApplication::sendUpdatedObjectPositionToServer(GameObject& obj)
+{
+	RakNet::BitStream bsOut;
+
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_CLIENT_UPDATE_OBJECT_POSITION);
+	bsOut.Write(obj.uiObjectID);
+	bsOut.Write(obj.fXPos);
+	bsOut.Write(obj.fZPos);
+
+	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+
 }
