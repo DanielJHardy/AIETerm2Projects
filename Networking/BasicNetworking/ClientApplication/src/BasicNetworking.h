@@ -45,6 +45,8 @@ public:
 	void moveClientObject(float deltaTime);
 	void sendUpdatedObjectPositionToServer(GameObject& obj);
 
+	void getAllObjects();
+
 public:
 	RakNet::RakPeerInterface* m_pPeerInterface;
 

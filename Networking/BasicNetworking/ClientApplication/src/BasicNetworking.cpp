@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <time.h>
 
 
 #include "MessageIdentifiers.h"
@@ -13,6 +14,8 @@
 
 BasicNetworkingApplication::BasicNetworkingApplication()
 {
+	srand(time(0));
+
 	//generate random color
 	float R = float(rand()) / RAND_MAX * 1;
 	float G = float(rand()) / RAND_MAX * 1;
@@ -155,7 +158,11 @@ void BasicNetworkingApplication::handleNetworkMessages()
 
 			std::cout << "Server has given us an ID of: " << m_uiClientID << std::endl;
 
+			//create our game object
 			createGameObject();
+
+			//get all existing objects on the server
+			getAllObjects();
 
 			break;
 		}
@@ -256,7 +263,7 @@ void BasicNetworkingApplication::moveClientObject(float deltaTime)
 		bUpdatedObjectPosition = true;
 	}
 
-	if (bUpdatedObjectPosition)
+	if (bUpdatedObjectPosition == true)
 	{
 		sendUpdatedObjectPositionToServer(myClientObject);
 	}
@@ -273,6 +280,15 @@ void BasicNetworkingApplication::sendUpdatedObjectPositionToServer(GameObject& o
 	bsOut.Write(obj.fXPos);
 	bsOut.Write(obj.fZPos);
 
-	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+	m_pPeerInterface->Send(&bsOut, LOW_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
 
+}
+
+void BasicNetworkingApplication::getAllObjects()
+{
+	RakNet::BitStream bsOut;
+
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_CLIENT_GET_ALL_OBJECTS);
+
+	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
 }
