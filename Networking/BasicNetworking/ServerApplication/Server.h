@@ -40,6 +40,7 @@ protected:
 	void sendAllGameObjectsToClient(RakNet::SystemAddress& client);
 
 	void updateObjectPosition(RakNet::BitStream& bsIn, RakNet::SystemAddress& ownerSysAddress);
+	void updateObjectVelocity(RakNet::BitStream& bsIn, RakNet::SystemAddress& ownerSysAddress);
 
 private:
 	struct ConnectionInfo

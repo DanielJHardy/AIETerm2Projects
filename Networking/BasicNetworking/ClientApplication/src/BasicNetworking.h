@@ -43,7 +43,12 @@ public:
 	void createGameObject();
 
 	void moveClientObject(float deltaTime);
+
 	void sendUpdatedObjectPositionToServer(GameObject& obj);
+	void sendUpdatedObjectVelocityToServer(GameObject& obj);
+
+	void updateLocalObjectPosition(RakNet::BitStream& bsIn);
+	void updateLocalObjectVelocity(RakNet::BitStream& bsIn);
 
 	void getAllObjects();
 

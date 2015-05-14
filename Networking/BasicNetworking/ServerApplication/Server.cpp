@@ -4,6 +4,7 @@ Server::Server()
 {
 	//Initialize the Raknet peer interface first
 	m_pPeerInterface = RakNet::RakPeerInterface::GetInstance();
+	m_pPeerInterface->ApplyNetworkSimulator(0.0f, 200, 20);
 
 	m_uiConnectionCounter = 1;
 	m_uiObjectCounter = 1;
@@ -26,6 +27,7 @@ void Server::run()
 	//Now call startup - max of 32 connections, on the assigned port
 	m_pPeerInterface->Startup(32, &sd, 1);
 	m_pPeerInterface->SetMaximumIncomingConnections(32);
+
 
 	handleNetworkMessages();
 }
@@ -62,12 +64,20 @@ void Server::handleNetworkMessages()
 				createNewObject(bsIn, packet->systemAddress);
 				break;
 			}
-			case ID_CLIENT_UPDATE_OBJECT_POSITION:
+			case ID_UPDATE_OBJECT_POSITION:
 			{
 				RakNet::BitStream bsIn(packet->data, packet->length, false);
 				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
 
 				updateObjectPosition(bsIn, packet->systemAddress);
+				break;
+			}
+			case ID_UPDATE_OBJECT_VELOCITY:
+			{
+				RakNet::BitStream bsIn(packet->data, packet->length, false);
+				bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+				updateObjectVelocity(bsIn, packet->systemAddress);
 				break;
 			}
 			case ID_CLIENT_GET_ALL_OBJECTS:
@@ -141,6 +151,9 @@ void Server::createNewObject(RakNet::BitStream& bsIn, RakNet::SystemAddress& own
 	bsIn.Read(newGameObject.fGreenColour);
 	bsIn.Read(newGameObject.fBlueColour);
 
+	bsIn.Read(newGameObject.fXVelocity);
+	bsIn.Read(newGameObject.fZVelocity);
+
 	newGameObject.uiOwnerClientID = systemAddressToClientID(ownerSysAddress);
 	newGameObject.uiObjectID = m_uiObjectCounter++;
 
@@ -161,7 +174,37 @@ void Server::updateObjectPosition(RakNet::BitStream& bsIn, RakNet::SystemAddress
 	bsIn.Read(m_gameObjects[tempObjID-1].fXPos);
 	bsIn.Read(m_gameObjects[tempObjID-1].fZPos);
 
-	sendGameObjectToAllClients(m_gameObjects[tempObjID-1], ownerSysAddress);
+	//send to all other clients
+	RakNet::BitStream bsOut;
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_UPDATE_OBJECT_POSITION);
+	bsOut.Write(tempObjID);
+	bsOut.Write(m_gameObjects[tempObjID - 1].fXPos);
+	bsOut.Write(m_gameObjects[tempObjID - 1].fZPos);
+
+	m_pPeerInterface->Send(&bsOut, LOW_PRIORITY, RELIABLE_ORDERED, 0, ownerSysAddress, true);
+
+}
+
+void Server::updateObjectVelocity(RakNet::BitStream& bsIn, RakNet::SystemAddress& ownerSysAddress)
+{
+	unsigned int inObjID;
+	bsIn.Read(inObjID);
+
+	//if the sender doesnt own this object, return
+	if (m_gameObjects[inObjID - 1].uiOwnerClientID != systemAddressToClientID(ownerSysAddress)) return;
+
+	//update velocity
+	bsIn.Read(m_gameObjects[inObjID - 1].fXVelocity);
+	bsIn.Read(m_gameObjects[inObjID - 1].fZVelocity);
+
+	//send to all other clients
+	RakNet::BitStream bsOut;
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_UPDATE_OBJECT_VELOCITY);
+	bsOut.Write(inObjID);
+	bsOut.Write(m_gameObjects[inObjID - 1].fXVelocity);
+	bsOut.Write(m_gameObjects[inObjID - 1].fZVelocity);
+
+	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, ownerSysAddress, true);
 
 }
 
@@ -177,6 +220,8 @@ void Server::sendGameObjectToAllClients(GameObject& gameObject, RakNet::SystemAd
 	bsOut.Write(gameObject.fBlueColour);
 	bsOut.Write(gameObject.uiOwnerClientID);
 	bsOut.Write(gameObject.uiObjectID);
+	bsOut.Write(gameObject.fXVelocity);
+	bsOut.Write(gameObject.fZVelocity);
 
 	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, ownerSystemAddress, true);
 }
@@ -203,6 +248,8 @@ void Server::sendAllGameObjectsToClient(RakNet::SystemAddress& client)
 		bsOut.Write(objectOut.fBlueColour);
 		bsOut.Write(objectOut.uiOwnerClientID);
 		bsOut.Write(objectOut.uiObjectID);
+		bsOut.Write(objectOut.fXVelocity);
+		bsOut.Write(objectOut.fZVelocity);
 
 		//send packet
 		m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, client, false);

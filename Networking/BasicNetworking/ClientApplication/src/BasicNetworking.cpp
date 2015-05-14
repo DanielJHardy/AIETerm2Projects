@@ -168,6 +168,20 @@ void BasicNetworkingApplication::handleNetworkMessages()
 
 			break;
 		}
+		case ID_UPDATE_OBJECT_POSITION:
+		{
+			RakNet::BitStream bsIn(packet->data, packet->length, false);
+			bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+			
+			updateLocalObjectPosition(bsIn);
+		}
+		case ID_UPDATE_OBJECT_VELOCITY:
+		{
+			RakNet::BitStream bsIn(packet->data, packet->length, false);
+			bsIn.IgnoreBytes(sizeof(RakNet::MessageID));
+
+			updateLocalObjectVelocity(bsIn);
+		}
 		default:
 			std::cout << "Received a message with an unknown id: " << packet->data[0] << std::endl;
 			break;
@@ -189,6 +203,9 @@ void BasicNetworkingApplication::readObjectDataFromServer(RakNet::BitStream& bsI
 	bsIn.Read(tempGameObject.uiOwnerClientID);
 	bsIn.Read(tempGameObject.uiObjectID);
 
+	bsIn.Read(tempGameObject.fXVelocity);
+	bsIn.Read(tempGameObject.fZVelocity);
+
 	//check to see if this object is already stored in our local game object list
 	bool bFound = false;
 	for (int i = 0; i < m_gameObjects.size(); i++)
@@ -205,6 +222,8 @@ void BasicNetworkingApplication::readObjectDataFromServer(RakNet::BitStream& bsI
 			obj.fGreenColour = tempGameObject.fGreenColour;
 			obj.fBlueColour = tempGameObject.fBlueColour;
 			obj.uiOwnerClientID = tempGameObject.uiOwnerClientID;
+			obj.fXVelocity = tempGameObject.fXVelocity;
+			obj.fZVelocity = tempGameObject.fZVelocity;
 		}
 	}
 
@@ -231,6 +250,9 @@ void BasicNetworkingApplication::createGameObject()
 	tempGameObject.fGreenColour = m_myColour.g;
 	tempGameObject.fBlueColour = m_myColour.b;
 
+	tempGameObject.fXVelocity = 0.0f;
+	tempGameObject.fZVelocity = 0.0f;
+
 	//ensure that the write order is the same as the read order on the server
 	bsOut.Write((RakNet::MessageID)GameMessages::ID_CLIENT_CREATE_OBJECT);
 	bsOut.Write(tempGameObject.fXPos);
@@ -238,6 +260,9 @@ void BasicNetworkingApplication::createGameObject()
 	bsOut.Write(tempGameObject.fRedColour);
 	bsOut.Write(tempGameObject.fGreenColour);
 	bsOut.Write(tempGameObject.fBlueColour);
+
+	bsOut.Write(tempGameObject.fXVelocity);
+	bsOut.Write(tempGameObject.fZVelocity);
 
 	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
 }
@@ -288,13 +313,25 @@ void BasicNetworkingApplication::sendUpdatedObjectPositionToServer(GameObject& o
 {
 	RakNet::BitStream bsOut;
 
-	bsOut.Write((RakNet::MessageID)GameMessages::ID_CLIENT_UPDATE_OBJECT_POSITION);
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_UPDATE_OBJECT_POSITION);
 	bsOut.Write(obj.uiObjectID);
 	bsOut.Write(obj.fXPos);
 	bsOut.Write(obj.fZPos);
 
 	m_pPeerInterface->Send(&bsOut, LOW_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+}
 
+void BasicNetworkingApplication::sendUpdatedObjectVelocityToServer(GameObject& obj)
+{
+	RakNet::BitStream bsOut;
+
+	bsOut.Write((RakNet::MessageID)GameMessages::ID_UPDATE_OBJECT_VELOCITY);
+
+	bsOut.Write(obj.uiObjectID);
+	bsOut.Write(obj.fXVelocity);
+	bsOut.Write(obj.fZVelocity);
+
+	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
 }
 
 void BasicNetworkingApplication::getAllObjects()
@@ -304,4 +341,38 @@ void BasicNetworkingApplication::getAllObjects()
 	bsOut.Write((RakNet::MessageID)GameMessages::ID_CLIENT_GET_ALL_OBJECTS);
 
 	m_pPeerInterface->Send(&bsOut, HIGH_PRIORITY, RELIABLE_ORDERED, 0, RakNet::UNASSIGNED_SYSTEM_ADDRESS, true);
+}
+
+void BasicNetworkingApplication::updateLocalObjectPosition(RakNet::BitStream& bsIn)
+{
+	unsigned int in_objID;
+	bsIn.Read(in_objID);
+
+	for (unsigned int i = 0; i < m_gameObjects.size(); i++)
+	{
+		if (m_gameObjects[i].uiObjectID == in_objID)
+		{
+			bsIn.Read(m_gameObjects[i].fXPos);
+			bsIn.Read(m_gameObjects[i].fZPos);
+
+			break;
+		}
+	}
+}
+
+void BasicNetworkingApplication::updateLocalObjectVelocity(RakNet::BitStream& bsIn)
+{
+	unsigned int in_objID;
+	bsIn.Read(in_objID);
+
+	for (unsigned int i = 0; i < m_gameObjects.size(); i++)
+	{
+		if (m_gameObjects[i].uiObjectID == in_objID)
+		{
+			bsIn.Read(m_gameObjects[i].fXVelocity);
+			bsIn.Read(m_gameObjects[i].fZVelocity);
+
+			break;
+		}
+	}
 }
