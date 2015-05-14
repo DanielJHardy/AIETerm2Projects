@@ -73,6 +73,8 @@ void BasicNetworkingApplication::draw()
 		GameObject& obj = m_gameObjects[i];
 		Gizmos::addSphere(glm::vec3(obj.fXPos, 2, obj.fZPos), 2, 32, 32, glm::vec4(obj.fRedColour, obj.fGreenColour, obj.fBlueColour, 1), nullptr);
 	}
+
+
 	Gizmos::draw(m_cam->getProjectionView());
 }
 
@@ -223,7 +225,7 @@ void BasicNetworkingApplication::createGameObject()
 	RakNet::BitStream bsOut;
 
 	GameObject tempGameObject;
-	tempGameObject.fXPos = 0.0f;
+	tempGameObject.fXPos = (m_uiClientID-1) * 4;
 	tempGameObject.fZPos = 0.0f;
 	tempGameObject.fRedColour = m_myColour.r;
 	tempGameObject.fGreenColour = m_myColour.g;
@@ -250,16 +252,27 @@ void BasicNetworkingApplication::moveClientObject(float deltaTime)
 
 	bool bUpdatedObjectPosition = false;
 
+	float speed = 8;
 	GameObject& myClientObject = m_gameObjects[m_uiclientObjectIndex];
 
 	if (glfwGetKey(m_window, GLFW_KEY_UP))
 	{
-		myClientObject.fZPos += 2 * deltaTime;
+		myClientObject.fZPos += speed * deltaTime;
 		bUpdatedObjectPosition = true;
 	}
 	if (glfwGetKey(m_window, GLFW_KEY_DOWN))
 	{
-		myClientObject.fZPos -= 2 * deltaTime;
+		myClientObject.fZPos -= speed * deltaTime;
+		bUpdatedObjectPosition = true;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_LEFT))
+	{
+		myClientObject.fXPos += speed * deltaTime;
+		bUpdatedObjectPosition = true;
+	}
+	if (glfwGetKey(m_window, GLFW_KEY_RIGHT))
+	{
+		myClientObject.fXPos -= speed * deltaTime;
 		bUpdatedObjectPosition = true;
 	}
 
