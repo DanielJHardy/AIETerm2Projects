@@ -194,3 +194,5 @@ FakesAssemblies/
 
 # Visual Studio 6 workspace options file
 *.opt
+Physics/deps/FBXLoader/FBXLoader.lib
+Physics/deps/FBXLoader/FBXLoader_d.lib
