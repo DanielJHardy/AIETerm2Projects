@@ -1,10 +1,10 @@
 
-#include "CameraAndProjections.h"
+#include "myPhysicsEngine.h"
 #include "Callbacks.h"
 
 int main()
 {
-	CameraAndProjections app;
+	MyPhysicsEngine app;
 
 	if (app.Startup() == false)
 	{

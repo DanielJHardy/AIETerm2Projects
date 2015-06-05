@@ -19,11 +19,20 @@
     <Filter Include="Applications">
       <UniqueIdentifier>{cf7d769c-f101-4d42-b657-b60a4818feb2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Applications\CamerasAndProjections">
-      <UniqueIdentifier>{462142d0-1274-4f1c-8855-8730af12be30}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Utilities">
       <UniqueIdentifier>{a79bb6bb-9fce-4c8f-ab80-97ae3f1f98a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Applications\myPhysicsEngine">
+      <UniqueIdentifier>{7f7f04a9-a336-4f61-9eac-46d555820f01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhysicsEngine">
+      <UniqueIdentifier>{b5d52043-0d69-4712-8d7d-b12d6c63d8e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhysicsEngine\2D">
+      <UniqueIdentifier>{91246ba9-ee54-4693-85c3-6530d06f3bf8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="PhysicsEngine\2D\Actors">
+      <UniqueIdentifier>{745581f2-53c5-4dd5-990e-6d48a200fb95}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -45,14 +54,23 @@
     <ClCompile Include="src\FlyCamera.cpp">
       <Filter>Cameras</Filter>
     </ClCompile>
-    <ClCompile Include="src\CameraAndProjections.cpp">
-      <Filter>Applications\CamerasAndProjections</Filter>
-    </ClCompile>
     <ClCompile Include="src\Application.cpp">
       <Filter>Applications</Filter>
     </ClCompile>
     <ClCompile Include="src\Utility.cpp">
       <Filter>Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="src\MyPhysicsEngine.cpp">
+      <Filter>Applications\myPhysicsEngine</Filter>
+    </ClCompile>
+    <ClCompile Include="src\RigidBody.cpp">
+      <Filter>PhysicsEngine\2D\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sphere.cpp">
+      <Filter>PhysicsEngine\2D\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PhysicsScene.cpp">
+      <Filter>PhysicsEngine\2D</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -71,9 +89,6 @@
     <ClInclude Include="src\FlyCamera.h">
       <Filter>Cameras</Filter>
     </ClInclude>
-    <ClInclude Include="src\CameraAndProjections.h">
-      <Filter>Applications\CamerasAndProjections</Filter>
-    </ClInclude>
     <ClInclude Include="src\Application.h">
       <Filter>Applications</Filter>
     </ClInclude>
@@ -91,6 +106,21 @@
     </ClInclude>
     <ClInclude Include="src\Callbacks.h">
       <Filter>Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="src\myPhysicsEngine.h">
+      <Filter>Applications\myPhysicsEngine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsObject.h">
+      <Filter>PhysicsEngine\2D\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\RigidBody.h">
+      <Filter>PhysicsEngine\2D\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sphere.h">
+      <Filter>PhysicsEngine\2D\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PhysicsScene.h">
+      <Filter>PhysicsEngine\2D</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

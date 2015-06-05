@@ -51,8 +51,8 @@ bool CameraAndProjections::Startup()
 }
 void CameraAndProjections::Shutdown()
 {
-	//TwDeleteAllBars();
-	//TwTerminate();
+	TwDeleteAllBars();
+	TwTerminate();
 
 	Gizmos::destroy();
 }
@@ -66,11 +66,14 @@ bool CameraAndProjections::Update()
 
 	glClearColor(m_backColor.r, m_backColor.g, m_backColor.b, m_backColor.a);
 
+	Gizmos::clear();
+
 	if (Application::Update() == false)
 	{
 		return false;
 	}
 
+	Gizmos::add2DCircle(glm::vec2(100, 100), 100, 50, vec4(1, 0, 0, 1));
 
 	m_sceneCam.Update(dt);
 
@@ -93,6 +96,7 @@ void CameraAndProjections::Draw()
 
 
 	Gizmos::draw(m_sceneCam.getProjectionView());
+	Gizmos::draw2D(glm::ortho(0.0f,1280.0f,720.0f,0.0f));
 	TwDraw();
 
 	glfwSwapBuffers(this->m_window);
